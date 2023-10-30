@@ -1,0 +1,350 @@
+---
+title: "001-tezo-covariates"
+author: "Brosig Borbála"
+date: "2023-10-27"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setup
+
+```{r library}
+library(readxl)
+library(tidyverse)
+library(GGally)
+library(ggplot2)
+library(ape)
+library(gridExtra)
+library(grid)
+```
+
+## Merging
+
+```{r}
+#reading in the data
+psycholinguistic <- read_xlsx("data/Konzorcium-norming-AICM-results-sorted.xlsx")
+descriptive <- read_xlsx("data/stimuli_v2_2_allcovariates.xlsx")
+
+glimpse(psycholinguistic)
+```
+
+```{r}
+#separating columns
+psycholinguistic <- psycholinguistic %>% 
+  separate(wordpair, c("adjective", "noun"), sep = " ")
+```
+
+```{r}
+#merging the two dfs
+merged_covariates <- descriptive %>% 
+  left_join(psycholinguistic, by = c("adjective", "noun"))
+
+merged_covariates <- na.omit(merged_covariates)
+```
+
+## Distribution: Violinplots
+
+```{r}
+#frequency violinplots
+nounfreq <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = noun_freq, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Noun Frequency")
+
+adjfreq <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = adj_freq, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Adjective Frequency")
+
+```
+
+```{r}
+#character count violinplots
+nounchar <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = noun_char, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Noun Character Count")
+
+adjchar <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = adj_char, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Adjective Character Count")
+```
+
+```{r}
+#syllable count violinplots
+nounsyll <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = noun_syll, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Noun Syllable Count")
+
+adjsyll <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = adj_syll, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Adjective Syllable Count")
+```
+
+```{r}
+#phonological variables violinplots
+nounphon <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = noun_phon, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Noun Phonological Neighborhoods")
+
+adjphon <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = adj_phon, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Adjective Phonological Neighborhoods")
+```
+
+```{r}
+#putting into grid and saving
+descriptive_violin <- grid.arrange(nounfreq, adjfreq, nounchar, adjchar, nounsyll, adjsyll, nounphon, adjphon, nrow = 4, top="Descriptive Psycholinguistic Covariates", bottom="Condition")
+#ggsave("plots/001-descriptive-all-violinplots.jpg", plot = descriptive_violin,  width = 20, height = 20, units = "cm", dpi = 900)
+```
+
+```{r}
+#psychometric violinplots
+imag <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = imageability, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Imageability")
+
+conc <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = concreteness, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Concreteness")
+
+meanful <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = meaningfulness, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Meaningfulness")
+
+arousal <- merged_covariates %>%
+  group_by(adjective, noun) %>%
+  ggplot(aes(x = condition, y = arousal, fill = condition)) +
+  geom_violin() +
+  geom_boxplot(width=0.1, fill = 'white')+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Arousal")
+```
+
+```{r}
+#putting into grid and saving
+descriptive_violin <- grid.arrange(imag, conc, meanful, arousal, nrow = 2, top="Psychometric Psycholinguistic Covariates", bottom="Condition")
+#ggsave("plots/001-psychometric-violinplots.jpg", plot = descriptive_violin,  width = 20, height = 20, units = "cm", dpi = 900)
+```
+
+## Distributions & Correlations
+
+```{r}
+#selecting relevant variables
+merged_cov_explore <- merged_covariates %>% 
+  select(noun_freq, noun_char, noun_syll, noun_phon, adj_freq, adj_char, adj_syll, adj_phon, arousal, concreteness, imageability, meaningfulness)
+
+merged_cov_names <- merged_covariates %>% 
+  unite("name", adjective:noun, sep = " ") %>% 
+  select(name, noun_freq, noun_char, noun_syll, noun_phon, adj_freq, adj_char, adj_syll, adj_phon, arousal, concreteness, imageability, meaningfulness)
+
+```
+
+```{r}
+#exploring covariate distributions and correlations
+cov_explore <- ggpairs(merged_cov_explore,
+                       lower = list(continuous = wrap("smooth", colour = "lightblue", alpha =0.5, size = 0.8)), 
+                       upper = list(continuous = wrap("cor", corSize = 6)), 
+                       axisLabels = 'show')
+cov_explore
+#ggsave("plots/001-covariate-exploration.jpg", plot = cov_explore,  width = 20, height = 20, units = "cm", dpi = 900)
+```
+
+## Clustering
+
+```{r}
+#selecting label column
+label_column <- merged_cov_names$name
+
+#scaling the data
+colMeans(merged_cov_explore)
+apply(merged_cov_explore, 2, sd)
+
+merged_cov_scld <- scale(merged_cov_explore)
+colMeans(merged_cov_scld)
+apply(merged_cov_scld, 2, sd)
+
+merged_cov_scld <- as.data.frame(merged_cov_scld)
+
+#putting the label column back
+merged_cov_scld <- mutate(merged_cov_scld, label = label_column)
+```
+
+```{r}
+#hierarchical clustering
+set.seed(1)
+cov.hclust <- hclust(dist(merged_cov_scld), method = "complete")
+colors = c('#b4d2b1', '#568f8b', '#1d4a60', '#cd7e59', '#ddb247', '#d15252', "#95818D")
+cov <- cutree(cov.hclust, 7)
+cov.hclust$labels <- merged_cov_scld$label
+
+plot(cov.hclust, cex = 0.6)
+
+#plotting the clusters
+#png("plots/001-clusterplot.png", width = 20, height = 20, units = "cm", res = 900)
+plot(as.phylo(cov.hclust), type = "fan", cex = 0.3, label.offset = 0.3,
+     tip.color = colors[cov],
+     no.margin = TRUE)
+#dev.off()
+
+#adding cluster column and calculating means
+merged_covariates$cluster <- cov
+cluster_means <- merged_covariates %>%
+  group_by(cluster) %>%
+  summarise(across(everything(), mean, na.rm = TRUE))
+
+print(cluster_means)
+```
+
+
+```{r}
+#calculating itemno in each cluster-condition
+clusterbycondition <- merged_covariates %>%
+  group_by(cluster, condition) %>%
+  summarise(item_count = n())
+
+colors <- c("1" = '#b4d2b1', "2" = '#568f8b', "3" ='#1d4a60', "4" ='#cd7e59', "5" = '#ddb247',"6" ='#d15252', "7" = "#95818D")
+
+#plotting itemno in each cluster-condition
+p <- ggplot(clusterbycondition) +
+  geom_col(aes(x = condition, y = item_count, fill = as.factor(cluster)))+
+  scale_fill_manual(values = colors)+
+  theme_minimal()+
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "non",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  labs(x = NULL, y = NULL, title = "Number of items in each cluster in each condition")
+
+p
+
+```
+
+```{r}
+library(fmsb)
+
+norm_minmax <- function(x){
+                           (x- min(x)) /(max(x)-min(x))
+                          }
+norm_cov <- as.data.frame(lapply(cluster_means, norm_minmax))
+
+max_min <- data.frame(
+  Biology = c(20, 0), Physics = c(20, 0), Maths = c(20, 0),
+  Sport = c(20, 0), English = c(20, 0), Geography = c(20, 0),
+  Art = c(20, 0), Programming = c(20, 0), Music = c(20, 0)
+)
+rownames(max_min) <- c("Max", "Min")
+
+radar_cov <- rbind(max_min, norm_cov)
+radar_cov
+
+radarchart(radar_cov, axistype = 1, pcol = colors[cov], plwd=2 ,plty=1, 
+           title = "Cluster characteristics: Feature means per cluster", cglcol = "grey", 
+           cglty = 1, axislabcol = "grey", caxislabels = seq(0, 1, .2), cglwd = 0.8)
+```
+
