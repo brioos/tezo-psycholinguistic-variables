@@ -20,14 +20,16 @@ library(ape)
 library(gridExtra)
 library(grid)
 library(writexl)
+library(rstatix)
+library(ggpubr)
 ```
 
 ## Merging
 
 ```{r}
 #reading in the data
-psycholinguistic <- read_xlsx("data/Konzorcium-norming-AICM-results-sorted.xlsx")
-descriptive <- read_xlsx("data/stimuli_v2_2_allcovariates.xlsx")
+psycholinguistic <- read_xlsx("D:/HCCCL/tezóó/tezo-psycholinguistic-variables/data/Konzorcium-norming-AICM-results-sorted.xlsx")
+descriptive <- read_xlsx("D:/HCCCL/tezóó/tezo-psycholinguistic-variables/data/stimuli_v2_2_allcovariates.xlsx")
 
 glimpse(psycholinguistic)
 ```
@@ -374,5 +376,58 @@ create_beautiful_radarchart <- function(data, color = "#00AFBB",
 radcov <- create_beautiful_radarchart(radar_data, 
   color = c('#b4d2b1', '#568f8b', '#1d4a60', '#cd7e59', '#ddb247', '#d15252', "#95818D"))
 #dev.off()
+```
+
+```{r}
+anova_cov <-  merged_covariates %>% 
+  filter(stim_type != "FOIL") %>% 
+  mutate(stim_type = factor(as.factor(stim_type), levels = c("TARG", "CLOSE", "DISTANT"))) %>% 
+  mutate(itemno = as.factor(itemno))
+  
+  
+#CONCRETE
+conc_anova <- anova_test(anova_cov, dv=concreteness, wid =itemno, within = stim_type)
+get_anova_table(conc_anova) ## SIG. p < .08 F(2,198) = 19.705
+
+pwc_conc <- anova_cov %>% 
+              pairwise_t_test(
+                concreteness~stim_type, paired=TRUE,
+                p.adjust.method = "bonferroni"
+              )
+pwc_conc
+##### TARG - CLOSE SIG. t(99) = 5.1, p < .01
+##### TARG - DISTANT SIG. t(99) = 5.92, p < .01
+##### CLOSE - DISTANT SIG. t(99) = 1.13, p = .789
+
+#IMAGE
+imag_anova <- anova_test(anova_cov, dv=imageability, wid =itemno, within = stim_type)
+get_anova_table(imag_anova) ## SIG. p < .08 F(2,198) = 20.389
+
+pwc_imag <- anova_cov %>% 
+              pairwise_t_test(
+                imageability~stim_type, paired=TRUE,
+                p.adjust.method = "bonferroni"
+              )
+pwc_imag
+##### TARG - CLOSE SIG. t(99) = 3.91, p < .01
+##### TARG - DISTANT SIG. t(99) = 6.41, p < .01
+##### CLOSE - DISTANT SIG. t(99) = 2.47, p = .046
+
+
+#MEANING
+mean_anova <- anova_test(anova_cov, dv=meaningfulness, wid =itemno, within = stim_type)
+get_anova_table(mean_anova) ## SIG. p < .08 F(2,198) = 26.339
+
+pwc_mean <- anova_cov %>% 
+              pairwise_t_test(
+                meaningfulness~stim_type, paired=TRUE,
+                p.adjust.method = "bonferroni"
+              )
+pwc_mean
+##### TARG - CLOSE SIG. t(99) = 5.03, p < .01
+##### TARG - DISTANT SIG. t(99) = 7.12, p < .01
+##### CLOSE - DISTANT SIG. t(99) = 2.26, p = .078
+
+
 ```
 
